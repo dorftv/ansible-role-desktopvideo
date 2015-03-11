@@ -1,0 +1,37 @@
+---
+  
+- name: Check which version is installed.
+  shell: apt-cache show desktopvideo |grep Version |awk '{ print $2 }' |cut -d a -f1
+  register: current_version
+  
+- debug: var=current_version.stdout
+  
+- fail: The installed version matches the Install Candidate. Nothing to do.
+  when: "current_version.stdout | version_compare('{{ desktopvideo_version }}', '==')"
+
+- name: Install requirements
+  apt: name={{ item }} state=present
+  with_items:
+    dkms
+    
+- name: Create download directory if not exists.
+  file: path={{ desktopvideo_download_dir }} state=directory
+  
+- name: Download the Desktopvideo Driver
+  get_url: >
+    url="{{ desktopvideo_download_url }}"
+    dest="{{ desktopvideo_tar }}" mode=0775
+    
+- name: Untar the Driver
+  unarchive: src="{{ desktopvideo_tar }}" dest="{{ desktopvideo_download_dir }}" copy=no
+
+  #remove newer versions. todo: make skippable
+- name: Remove newer Versions
+  apt: name=desktopvideo state=absent
+  when: "current_version.stdout | version_compare('{{ desktopvideo_version }}', '>')"
+  
+- name: Install the driver
+  apt: deb="{{ desktopvideo_deb }}" state=present
+  
+- name: Run BlackmagicFirmwareUpdater update
+  shell: BlackmagicFirmwareUpdater update
