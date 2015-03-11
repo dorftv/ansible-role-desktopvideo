@@ -6,8 +6,11 @@
   
 - debug: var=current_version.stdout
   
-- fail: The installed version matches the Install Candidate. Nothing to do.
-  when: "current_version.stdout | version_compare('{{ desktopvideo_version }}', '==')"
+#- fail: The installed version matches the Install Candidate. Nothing to do.
+#  when:  current_version.stdout != ''  OR   current_version.stdout | version_compare('{{ desktopvideo_version }}', '==') 
+
+
+#  when: ( current_version.stdout | version_compare('{{ desktopvideo_version }}', '==') }}) OR (current_version.stdout == '')
 
 - name: Install requirements
   apt: name={{ item }} state=present
@@ -26,9 +29,9 @@
   unarchive: src="{{ desktopvideo_tar }}" dest="{{ desktopvideo_download_dir }}" copy=no
 
   #remove newer versions. todo: make skippable
-- name: Remove newer Versions
-  apt: name=desktopvideo state=absent
-  when: "current_version.stdout | version_compare('{{ desktopvideo_version }}', '>')"
+#- name: Remove newer Versions
+#  apt: name=desktopvideo state=absent
+#  when: "current_version.stdout | version_compare('{{ desktopvideo_version }}', '>')"
   
 - name: Install the driver
   apt: deb="{{ desktopvideo_deb }}" state=present
