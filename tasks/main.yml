@@ -10,7 +10,6 @@
 #  when:  current_version.stdout != ''  OR   current_version.stdout | version_compare('{{ desktopvideo_version }}', '==') 
 
 
-#  when: ( current_version.stdout | version_compare('{{ desktopvideo_version }}', '==') }}) OR (current_version.stdout == '')
 
 - name: Install requirements
   apt: name={{ item }} state=present
@@ -37,4 +36,11 @@
   apt: deb="{{ desktopvideo_deb }}" state=present
   
 - name: Run BlackmagicFirmwareUpdater update
-  shell: BlackmagicFirmwareUpdater update
+  shell: BlackmagicFirmwareUpdater update 0
+  ignore_errors: true
+  
+- name: clean up
+  file: path={{ desktopvideo_download_dir }} state=absent
+  when: desktopvideo_cleanup
+  
+
